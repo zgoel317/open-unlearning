@@ -4,6 +4,7 @@ The TOFU dataset serves as a benchmark for evaluating unlearning performance of 
 
 ## Quick Links
 
+- [**Website**](https://locuslab.github.io/tofu): The landing page for TOFU
 - [**arXiv Paper**](http://arxiv.org/abs/2401.06121): Detailed information about the TOFU dataset and its significance in unlearning tasks.
 - [**GitHub Repository**](https://github.com/locuslab/tofu): Access the source code, fine-tuning scripts, and additional resources for the TOFU dataset.
 - [**Dataset on Hugging Face**](https://huggingface.co/datasets/locuslab/TOFU): Direct link to download the TOFU dataset.
