@@ -24,6 +24,7 @@ conda activate tofu
 conda install pytorch pytorch-cuda=11.8 -c pytorch -c nvidia
 conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit
 pip install -r requirements.txt
+pip install flash-attn --no-build-isolation
 ```
 
 ## Loading the Dataset
