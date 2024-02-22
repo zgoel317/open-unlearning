@@ -69,10 +69,10 @@ def main(cfg):
     max_steps = int(cfg.num_epochs*len(torch_format_dataset))//(batch_size*gradient_accumulation_steps*num_devices)
     print(f"max_steps: {max_steps}")
 
-    if cfg.split == "all":
+    if cfg.split == "full":
         steps_per_epoch = len(torch_format_dataset)//(batch_size*gradient_accumulation_steps*num_devices)
     else:
-        #dont save retain model ckpt
+        #dont save retain model ckpt at every epoch
         steps_per_epoch = max_steps
 
     
