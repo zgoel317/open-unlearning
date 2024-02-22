@@ -98,6 +98,10 @@ def main(cfg):
         )
 
     model = AutoModelForCausalLM.from_pretrained(model_id, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
+    
+    # Hot fix for https://discuss.huggingface.co/t/help-with-llama-2-finetuning-setup/50035
+    model.generation_config.do_sample = True
+    
     if model_cfg["gradient_checkpointing"] == "true":
         model.gradient_checkpointing_enable()
     
@@ -127,7 +131,7 @@ def main(cfg):
     if cfg.LoRA.r != 0:
         model = model.merge_and_unload()
 
-
+    
     model.save_pretrained(cfg.save_dir)
     tokenizer.save_pretrained(cfg.save_dir)
 
