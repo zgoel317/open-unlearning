@@ -148,10 +148,11 @@ def get_all_evals(cfg, model, tokenizer, eval_task, eval_dataloader, base_eval_d
     gen_outputs = []
     ground_truths = []
     input_strings = []
-
+    all_indices = []
 
     for batch in tqdm(eval_dataloader):
         input_ids, labels, attention_mask, indices = batch
+        all_indices.extend(indices.cpu().numpy().tolist())
         batch = {"input_ids": input_ids, "labels": labels, "attention_mask": attention_mask}
         #send to device
         for k, v in batch.items():
@@ -180,10 +181,10 @@ def get_all_evals(cfg, model, tokenizer, eval_task, eval_dataloader, base_eval_d
         eval_logs['avg_gt_loss'].update(dict(zip(indices.cpu().numpy().tolist(), gt_loss_per_token.cpu().numpy().tolist())))
         eval_logs['gt_loss'].update(dict(zip(indices.cpu().numpy().tolist(), gt_loss.cpu().numpy().tolist())))
         eval_logs['num_token_gt'].update(dict(zip(indices.cpu().numpy().tolist(), num_token_gt.cpu().numpy().tolist())))
-        eval_logs['generated_text'].update(dict(zip(indices.cpu().numpy().tolist(), zip(input_strings, gen_outputs,ground_truths))))
+        eval_logs['generated_text'].update(dict(zip(indices.cpu().numpy().tolist(), zip(input_string, gen_output,gt))))
 
 
-    eval_logs.update(eval_rouge_recall(gen_outputs, ground_truths, indices))
+    eval_logs.update(eval_rouge_recall(gen_outputs, ground_truths, all_indices))
     eval_logs.update(eval_perturbation_ratio(base_eval_dataloader, perturb_dataloader, model))
 
     return eval_logs
@@ -207,7 +208,7 @@ def main(cfg):
     batch_size = cfg.batch_size
 
     model = None
-    config = AutoConfig.from_pretrained(model_id, trust_remote_code=True)
+    config = AutoConfig.from_pretrained(model_id)
     for attempt in range(3):
         try:
         # do thing
@@ -242,7 +243,7 @@ def main(cfg):
     aggregated_eval_logs = {}
     for i, (folder, split, question_key, answer_key, eval_task, base_answer_key, perturbed_answer_key) in enumerate(zip(cfg.data_path, cfg.split_list, cfg.question_key, cfg.answer_key, cfg.eval_task, cfg.base_answer_key, cfg.perturbed_answer_key)):
         world_size = int(os.environ.get('WORLD_SIZE', '1'))
-
+        print(f'Working on eval task {eval_task} with split {split}')
         save_filename = os.path.join(cfg.save_dir, f"{eval_task}.json")
         save_filename = save_filename if world_size == 1 else os.path.join(cfg.save_dir, f"{eval_task}_{os.environ.get('LOCAL_RANK', '0')}.json")
 
@@ -261,24 +262,24 @@ def main(cfg):
 
         aggregated_eval_logs[f'{eval_task}.json'] = eval_logs
 
-        aggregated_eval_log_filename = os.path.join(cfg.save_dir, "eval_log_aggregated.json")
+    aggregated_eval_log_filename = os.path.join(cfg.save_dir, "eval_log_aggregated.json")
 
-        with open(aggregated_eval_log_filename, "w") as f:
-            # pretty write json to f
-            json.dump(eval_logs, f, indent=4)
-                     
-        if cfg.retain_result is not None:
-            model_utility = get_model_utility(aggregated_eval_logs)
-            retain_result = json.load(open(cfg.retain_result, 'r'))
-            forget_quality = get_forget_quality(aggregated_eval_logs, retain_result)
-            aggregate_stat = {**model_utility, **forget_quality}
+    with open(aggregated_eval_log_filename, "w") as f:
+        # pretty write json to f
+        json.dump(aggregated_eval_logs, f, indent=4)
+                    
+    if cfg.retain_result is not None:
+        model_utility = get_model_utility(aggregated_eval_logs)
+        retain_result = json.load(open(cfg.retain_result, 'r'))
+        forget_quality = get_forget_quality(aggregated_eval_logs, retain_result)
+        aggregate_stat = {**model_utility, **forget_quality}
 
-            # save aggregate_stat as csv
-            with open(os.path.join(cfg.save_dir, "aggregate_stat.csv"), 'w') as csvfile:
-                field_names = list(aggregate_stat.keys())
-                writer = csv.DictWriter(csvfile, fieldnames=field_names)
-                writer.writeheader()
-                writer.writerow(aggregate_stat)
+        # save aggregate_stat as csv
+        with open(os.path.join(cfg.save_dir, "aggregate_stat.csv"), 'w') as csvfile:
+            field_names = list(aggregate_stat.keys())
+            writer = csv.DictWriter(csvfile, fieldnames=field_names)
+            writer.writeheader()
+            writer.writerow(aggregate_stat)
 
 def eval_accuracy(logits, labels):
     preds =logits.argmax(-1)
@@ -342,8 +343,8 @@ def eval_rouge_recall(gen_outputs, ground_truths, indices):
     rougeL_recall = {}
     for gen, gt, idx in zip(gen_outputs, ground_truths, indices):
         rouge_scores = scorer.score(gt, gen)
-        rouge1_recall[idx.item()] = rouge_scores['rouge1'].recall
-        rougeL_recall[idx.item()] = rouge_scores['rougeL'].recall
+        rouge1_recall[idx] = rouge_scores['rouge1'].recall
+        rougeL_recall[idx] = rouge_scores['rougeL'].recall
 
 
     return {'rouge1_recall': rouge1_recall, 'rougeL_recall': rougeL_recall}
