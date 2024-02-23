@@ -3,7 +3,7 @@ from torch import nn
 from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
 import datasets
-from utils import get_model_identifiers_from_yaml
+from utils import get_model_identifiers_from_yaml, add_dataset_index
 
 def convert_raw_data_to_model_format(tokenizer, max_length,  question, answer, model_configs):
     question_start_token, question_end_token, answer_token = model_configs['question_start_tag'], model_configs['question_end_tag'], model_configs['answer_tag']
@@ -115,7 +115,11 @@ class TextDatasetQA(Dataset):
         super(TextDatasetQA, self).__init__()
         self.tokenizer = tokenizer
         self.max_length = max_length
+        # data_len = len(datasets.load_dataset(data_path, split)["train"])
+        # self.data = datasets.load_dataset(data_path, split)["train"].select(range(min(100, data_len)))
         self.data = datasets.load_dataset(data_path, split)["train"]
+
+        self.data = add_dataset_index(self.data)
         self.model_configs = get_model_identifiers_from_yaml(model_family)
         self.qk = question_key
         self.ak = answer_key
@@ -126,7 +130,7 @@ class TextDatasetQA(Dataset):
     def __getitem__(self, idx):
         question = self.data[idx][self.qk]
         answers = self.data[idx][self.ak]
-
+        indices = self.data[idx]['index']
         if isinstance(answers, str):
             answers = [answers]
 
@@ -143,7 +147,8 @@ class TextDatasetQA(Dataset):
 
         return torch.stack(pad_input_ids_list).squeeze(),\
                 torch.stack(label_list).squeeze(),\
-                torch.stack(pad_attention_mask_list).squeeze()
+                torch.stack(pad_attention_mask_list).squeeze(),\
+                torch.tensor(indices)
 
 
 def collate_fn(batch):
@@ -159,6 +164,12 @@ def custom_data_collator(samples):
     attention_mask = [s[2] for s in samples]
     return torch.stack(input_ids), torch.stack(labels), torch.stack(attention_mask)
 
+def custom_data_collator_with_indices(samples):
+    input_ids = [s[0] for s in samples]
+    labels = [s[1] for s in samples]
+    attention_mask = [s[2] for s in samples]
+    indices = [s[3] for s in samples]
+    return torch.stack(input_ids), torch.stack(labels), torch.stack(attention_mask), torch.stack(indices)
 
 def get_batch_loss(output, labels):
     shifted_labels = labels[..., 1:].contiguous()

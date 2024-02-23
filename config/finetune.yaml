@@ -11,5 +11,5 @@ batch_size: 16
 gradient_accumulation_steps: 1
 num_epochs: 5
 lr: 1e-5
-save_dir: paper_models/final_ft_noLORA_5_epochs_inst_lr${lr}_${model_family}_${split}
+save_dir: /data/locus/llm_weights/zhilif/TOFU/final_ft_noLORA_5_epochs_inst_lr${lr}_${model_family}_${split}
 weight_decay: 0.01

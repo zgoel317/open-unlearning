@@ -15,3 +15,8 @@ unlearning_ckpt2/
 debug*/
 tool.ipynb
 __pycache__
+*.err
+*.out
+*.sh
+paper_models
+notebook/

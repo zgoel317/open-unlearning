@@ -243,12 +243,13 @@ class CustomTrainerForgetting(Trainer):
                     continue
 
                 eval_dataloader, base_eval_dataloader, perturb_dataloader = get_dataloader(eval_cfg, eval_task, self.tokenizer, folder, split, question_key, answer_key, base_answer_key, perturbed_answer_key)
-                eval_dataloader = self.accelerator.prepare(eval_dataloader)
-                # print('dataset condition: ', len(eval_dataloader.dataset), self.accelerator.local_process_index)
-                base_eval_dataloader = self.accelerator.prepare(base_eval_dataloader)
-                perturb_dataloader = self.accelerator.prepare(perturb_dataloader)
+                # eval_dataloader = self.accelerator.prepare(eval_dataloader)
+                # # print('dataset condition: ', len(eval_dataloader.dataset), self.accelerator.local_process_index)
+                # base_eval_dataloader = self.accelerator.prepare(base_eval_dataloader)
+                # perturb_dataloader = self.accelerator.prepare(perturb_dataloader)
 
                 eval_logs = get_all_evals(eval_cfg, model, self.tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader)
+
                 with open(save_filename, "w") as f:
                     # pretty write json to f
                     json.dump(eval_logs, f, indent=4)
@@ -279,23 +280,24 @@ class CustomTrainerForgetting(Trainer):
                                 os.remove(filename)
                                 
             if self.accelerator.is_local_main_process:
-                aggregated_eval_logs = interleave_eval_result_dict(aggregated_eval_logs, forget_rate, large_bsz=eval_cfg.batch_size, num_processes=world_size)
+                # aggregated_eval_logs = interleave_eval_result_dict(aggregated_eval_logs, forget_rate, large_bsz=eval_cfg.batch_size, num_processes=world_size)
                 aggregated_eval_log_filename = os.path.join(curr_save_dir, "eval_log_aggregated.json")
 
                 with open(aggregated_eval_log_filename, 'w') as f:
                     json.dump(aggregated_eval_logs, f, indent=4)
 
-                model_utility = get_model_utility(aggregated_eval_logs)
-                retain_result = json.load(open(eval_cfg.retain_result, 'r'))
-                forget_quality = get_forget_quality(aggregated_eval_logs, retain_result)
-                aaggregate_stat = {**model_utility, **forget_quality}
+                if eval_cfg.retain_result is not None:
+                    model_utility = get_model_utility(aggregated_eval_logs)
+                    retain_result = json.load(open(eval_cfg.retain_result, 'r'))
+                    forget_quality = get_forget_quality(aggregated_eval_logs, retain_result)
+                    aggregate_stat = {**model_utility, **forget_quality}
 
-                # save aaggregate_stat as csv
-                with open(os.path.join(curr_save_dir, "aggregate_stat.csv"), 'w') as csvfile:
-                    field_names = list(aaggregate_stat.keys())
-                    writer = csv.DictWriter(csvfile, fieldnames=field_names)
-                    writer.writeheader()
-                    writer.writerow(aaggregate_stat)
+                    # save aggregate_stat as csv
+                    with open(os.path.join(curr_save_dir, "aggregate_stat.csv"), 'w') as csvfile:
+                        field_names = list(aggregate_stat.keys())
+                        writer = csv.DictWriter(csvfile, fieldnames=field_names)
+                        writer.writeheader()
+                        writer.writerow(aggregate_stat)
 
 def custom_data_collator_forget(samples):
     forget_samples, retain_samples = [sample[0] for sample in samples], [sample[1] for sample in samples]
