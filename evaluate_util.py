@@ -10,6 +10,7 @@ from rouge_score import rouge_scorer
 from utils import get_model_identifiers_from_yaml, get_model_utility, get_forget_quality
 import torch.nn as nn
 import csv 
+import numpy as np 
 
 def eval_perturbation_ratio(eval_dataloader, perturb_dataloader, model):
     eval_logs = {}
@@ -54,7 +55,9 @@ def eval_perturbation_ratio(eval_dataloader, perturb_dataloader, model):
 
         perturb_loss_per_token = perturb_loss/num_token_perturb
         gt_loss_per_token = gt_loss/num_token_gt
-        truth_ratio = torch.exp(-1 * perturb_loss_per_token).mean(-1) / torch.exp(-1 * gt_loss_per_token)
+        # truth_ratio = torch.exp(-1 * perturb_loss_per_token).mean(-1) / torch.exp(-1 * gt_loss_per_token)
+        truth_ratio = torch.exp(gt_loss_per_token - perturb_loss_per_token.mean(-1))
+
 
         # zip index and each stat into a dict
         perturb_loss_per_token = dict(zip(indices.cpu().numpy().tolist(), perturb_loss_per_token.cpu().numpy().tolist()))
@@ -142,7 +145,7 @@ def get_dataloader(cfg, eval_task, tokenizer, folder, split, question_key, answe
 
     return eval_dataloader, base_eval_dataloader, perturb_dataloader
 
-def get_all_evals(cfg, model, tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader):
+def get_all_evals(cfg, model, tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader, normalize_gt=False):
     eval_logs = {}
 
     gen_outputs = []
@@ -186,6 +189,20 @@ def get_all_evals(cfg, model, tokenizer, eval_task, eval_dataloader, base_eval_d
 
     eval_logs.update(eval_rouge_recall(gen_outputs, ground_truths, all_indices))
     eval_logs.update(eval_perturbation_ratio(base_eval_dataloader, perturb_dataloader, model))
+
+    if normalize_gt:
+        avg_gt_loss = eval_logs['avg_gt_loss']
+        avg_perturb_loss = eval_logs['average_perturb_loss']
+        data_indices = avg_gt_loss.keys()
+        normalized_gt_loss = {}
+        for idx in data_indices:
+            truth_prob = np.exp(-1 * avg_gt_loss[idx])
+            perturb_prob = np.exp(-1 * np.array(avg_perturb_loss[idx]))
+            all_prob = np.array([truth_prob, *perturb_prob])
+            normalized_gt_prob = truth_prob / all_prob.sum()
+            normalized_gt_loss[idx] = -1 * np.log(normalized_gt_prob)
+
+        eval_logs['normalized_gt_loss'] = normalized_gt_loss
 
     return eval_logs
 
@@ -253,8 +270,10 @@ def main(cfg):
 
         eval_dataloader, base_eval_dataloader, perturb_dataloader = get_dataloader(cfg, eval_task, tokenizer, folder, split, question_key, answer_key, base_answer_key, perturbed_answer_key)
 
-
-        eval_logs = get_all_evals(cfg, model, tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader)
+        normalize_gt = False 
+        if 'eval_log' not in eval_task:
+            normalize_gt = True
+        eval_logs = get_all_evals(cfg, model, tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader, normalize_gt=normalize_gt)
 
         with open(save_filename, "w") as f:
             # pretty write json to f

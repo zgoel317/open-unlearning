@@ -13,6 +13,7 @@ from utils import merge_dicts, interleave_eval_result_dict, get_forget_quality, 
 import numpy as np
 from scipy.stats import ks_2samp, hmean
 import csv 
+from transformers.integrations.deepspeed import deepspeed_init, deepspeed_load_checkpoint, is_deepspeed_available
 
 def printll(name, inp):
     #print list with 4 decimal for each item
@@ -192,6 +193,9 @@ class CustomTrainerForgetting(Trainer):
         ignore_keys = None,
         metric_key_prefix = "eval",
     ):
+        # if eval is called w/o train, handle model prep here
+        if self.is_deepspeed_enabled and self.deepspeed is None:
+            _, _ = deepspeed_init(self, num_training_steps=0, inference=True)
         args = self.args
         model = self._wrap_model(self.model, training=False, dataloader=None)
         print(self.is_in_train, args.device, model.dtype, self.args.dataloader_num_workers, self.eval_cfg.split_list, self.eval_cfg.split)
@@ -243,12 +247,14 @@ class CustomTrainerForgetting(Trainer):
                     continue
 
                 eval_dataloader, base_eval_dataloader, perturb_dataloader = get_dataloader(eval_cfg, eval_task, self.tokenizer, folder, split, question_key, answer_key, base_answer_key, perturbed_answer_key)
-                # eval_dataloader = self.accelerator.prepare(eval_dataloader)
-                # # print('dataset condition: ', len(eval_dataloader.dataset), self.accelerator.local_process_index)
-                # base_eval_dataloader = self.accelerator.prepare(base_eval_dataloader)
-                # perturb_dataloader = self.accelerator.prepare(perturb_dataloader)
-
-                eval_logs = get_all_evals(eval_cfg, model, self.tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader)
+                eval_dataloader = self.accelerator.prepare(eval_dataloader)
+                # print('dataset condition: ', len(eval_dataloader.dataset), self.accelerator.local_process_index)
+                base_eval_dataloader = self.accelerator.prepare(base_eval_dataloader)
+                perturb_dataloader = self.accelerator.prepare(perturb_dataloader)
+                normalize_gt = False 
+                if 'eval_log' not in eval_task:
+                    normalize_gt = True
+                eval_logs = get_all_evals(eval_cfg, model, self.tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader, normalize_gt=normalize_gt)
 
                 with open(save_filename, "w") as f:
                     # pretty write json to f

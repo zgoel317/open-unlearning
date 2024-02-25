@@ -20,3 +20,4 @@ __pycache__
 *.sh
 paper_models
 notebook/
+*.ttf

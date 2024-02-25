@@ -12,7 +12,7 @@ batch_size: 16
 gradient_accumulation_steps: 4
 num_epochs: 10
 forget_loss: grad_ascent
-save_dir: ${model_path}/1GPU_${forget_loss}_${lr}_${split}
+save_dir: ${model_path}/${forget_loss}_${lr}_${split}
 overwrite_dir: false
 weight_decay: 0.01
 save_model: true
