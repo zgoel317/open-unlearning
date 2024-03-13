@@ -1,7 +1,7 @@
 from data_module import TextDatasetQA, custom_data_collator
 from dataloader import CustomTrainer
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 import hydra 
 import transformers
 import os
@@ -98,22 +98,24 @@ def main(cfg):
         )
 
     model = AutoModelForCausalLM.from_pretrained(model_id, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
+
     
     # Hot fix for https://discuss.huggingface.co/t/help-with-llama-2-finetuning-setup/50035
     model.generation_config.do_sample = True
     
+
     if model_cfg["gradient_checkpointing"] == "true":
         model.gradient_checkpointing_enable()
-    
-    config = LoraConfig(
-        r=cfg.LoRA.r, 
-        lora_alpha=cfg.LoRA.alpha, 
-        target_modules=find_all_linear_names(model), 
-        lora_dropout=cfg.LoRA.dropout,
-        bias="none", 
-        task_type="CAUSAL_LM"
-    )
+
     if cfg.LoRA.r != 0:
+        config = LoraConfig(
+            r=cfg.LoRA.r, 
+            lora_alpha=cfg.LoRA.alpha, 
+            target_modules=find_all_linear_names(model), 
+            lora_dropout=cfg.LoRA.dropout,
+            bias="none", 
+            task_type="CAUSAL_LM"
+        )
         model = get_peft_model(model, config)
     
 
@@ -131,7 +133,7 @@ def main(cfg):
     if cfg.LoRA.r != 0:
         model = model.merge_and_unload()
 
-    
+
     model.save_pretrained(cfg.save_dir)
     tokenizer.save_pretrained(cfg.save_dir)
 

@@ -8,14 +8,16 @@ LoRA:
 lr: 1e-5
 split: forget01
 data_path: locuslab/TOFU
-batch_size: 4
+batch_size: 16
 gradient_accumulation_steps: 4
 num_epochs: 10
 forget_loss: grad_ascent
-save_dir: ${model_path}/1GPU_${forget_loss}_${lr}_${split}
+save_dir: ${model_path}/${forget_loss}_${lr}_${split}
 overwrite_dir: false
 weight_decay: 0.01
-
+save_model: true
+eval_while_train: true
+eval_only: false
 eval:
   retain_result: data/retain90_llama_wd0.01/eval_results/ds_size300/eval_log_aggregated.json
   model_path: ${..model_path}

@@ -54,6 +54,14 @@ Make sure that the path of the model to be unlearned is correctly provided in th
 CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node=2 --master_port=$master_port forget.py --config-name=forget.yaml split=${split} batch_size=4 gradient_accumulation_steps=4 model_family=${model} lr=${lr}
 ```
 
+## Evaluate models
+Once you have the model trained, you can generate the statistics used for evaluation with the following command:
+```
+CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node=1 --master_port=$port evaluate_util.py\
+ model_family=$model_family split=$split\
+ model_path=$model_path
+```
+You can modify the configuration in config/eval_everything.yaml. We suggest to evaluate with one gpu, meanwhile we are also working on a script that allows multi-gpu evaluations.
 
 ### Available forget sets are:
 

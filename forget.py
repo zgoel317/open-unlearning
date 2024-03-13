@@ -1,7 +1,7 @@
 from data_module import TextForgetDatasetQA, TextForgetDatasetDPOQA
 from dataloader import CustomTrainerForgetting, custom_data_collator_forget
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 import hydra 
 import transformers
 import os
@@ -35,7 +35,7 @@ def print_trainable_parameters(model):
         f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
     )
 
-@hydra.main(version_base=None, config_path="config", config_name="forget_no_lora")
+@hydra.main(version_base=None, config_path="config", config_name="forget")
 def main(cfg):
     num_devices = int(os.environ.get('WORLD_SIZE', 1))
     print(f"num_devices: {num_devices}")
@@ -90,12 +90,14 @@ def main(cfg):
             logging_dir=f'{cfg.save_dir}/logs',
             output_dir=cfg.save_dir,
             optim="paged_adamw_32bit",
+            save_strategy="steps" if cfg.save_model and (not cfg.eval_only) else "no",
             save_steps=steps_per_epoch,
+            save_only_model=True,
             ddp_find_unused_parameters= False,
             deepspeed='config/ds_config.json',
             weight_decay = cfg.weight_decay,
-            evaluation_strategy = "steps",
             eval_steps = steps_per_epoch,
+            evaluation_strategy = "steps" if cfg.eval_while_train else "no",
         )
     
     #first get the base model architectur2e
@@ -114,10 +116,12 @@ def main(cfg):
     oracle_model = None
 
     if path_found:
+        config = AutoConfig.from_pretrained(model_id)
+
         print("Loading from checkpoint")
-        model = AutoModelForCausalLM.from_pretrained(cfg.model_path, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
+        model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
         if cfg.forget_loss == "KL":
-            oracle_model = AutoModelForCausalLM.from_pretrained(cfg.model_path, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
+            oracle_model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
 
     else:
         print("Loading after merge and unload")
@@ -163,11 +167,16 @@ def main(cfg):
         eval_cfg = cfg.eval,
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
-    trainer.train()
+    # trainer.train()
+    if cfg.eval_only:
+        trainer.evaluate()
+    else:
+        trainer.train()
 
     #save the tokenizer
-    model.save_pretrained(cfg.save_dir)
-    tokenizer.save_pretrained(cfg.save_dir)
+    if cfg.save_model and (not cfg.eval_only):
+        model.save_pretrained(cfg.save_dir)
+        tokenizer.save_pretrained(cfg.save_dir)
 
     #delete all "global_step*" files in the save_dir/checkpoint-*/ directories
     if local_rank == 0:

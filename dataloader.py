@@ -13,6 +13,7 @@ from utils import merge_dicts, interleave_eval_result_dict, get_forget_quality, 
 import numpy as np
 from scipy.stats import ks_2samp, hmean
 import csv 
+from transformers.integrations.deepspeed import deepspeed_init, deepspeed_load_checkpoint, is_deepspeed_available
 
 def printll(name, inp):
     #print list with 4 decimal for each item
@@ -192,6 +193,9 @@ class CustomTrainerForgetting(Trainer):
         ignore_keys = None,
         metric_key_prefix = "eval",
     ):
+        # if eval is called w/o train, handle model prep here
+        if self.is_deepspeed_enabled and self.deepspeed is None:
+            _, _ = deepspeed_init(self, num_training_steps=0, inference=True)
         args = self.args
         model = self._wrap_model(self.model, training=False, dataloader=None)
         print(self.is_in_train, args.device, model.dtype, self.args.dataloader_num_workers, self.eval_cfg.split_list, self.eval_cfg.split)
@@ -247,8 +251,11 @@ class CustomTrainerForgetting(Trainer):
                 # print('dataset condition: ', len(eval_dataloader.dataset), self.accelerator.local_process_index)
                 base_eval_dataloader = self.accelerator.prepare(base_eval_dataloader)
                 perturb_dataloader = self.accelerator.prepare(perturb_dataloader)
+                normalize_gt = False 
+                if 'eval_log' not in eval_task:
+                    normalize_gt = True
+                eval_logs = get_all_evals(eval_cfg, model, self.tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader, normalize_gt=normalize_gt)
 
-                eval_logs = get_all_evals(eval_cfg, model, self.tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader)
                 with open(save_filename, "w") as f:
                     # pretty write json to f
                     json.dump(eval_logs, f, indent=4)
@@ -279,23 +286,24 @@ class CustomTrainerForgetting(Trainer):
                                 os.remove(filename)
                                 
             if self.accelerator.is_local_main_process:
-                aggregated_eval_logs = interleave_eval_result_dict(aggregated_eval_logs, forget_rate, large_bsz=eval_cfg.batch_size, num_processes=world_size)
+                # aggregated_eval_logs = interleave_eval_result_dict(aggregated_eval_logs, forget_rate, large_bsz=eval_cfg.batch_size, num_processes=world_size)
                 aggregated_eval_log_filename = os.path.join(curr_save_dir, "eval_log_aggregated.json")
 
                 with open(aggregated_eval_log_filename, 'w') as f:
                     json.dump(aggregated_eval_logs, f, indent=4)
 
-                model_utility = get_model_utility(aggregated_eval_logs)
-                retain_result = json.load(open(eval_cfg.retain_result, 'r'))
-                forget_quality = get_forget_quality(aggregated_eval_logs, retain_result)
-                aaggregate_stat = {**model_utility, **forget_quality}
+                if eval_cfg.retain_result is not None:
+                    model_utility = get_model_utility(aggregated_eval_logs)
+                    retain_result = json.load(open(eval_cfg.retain_result, 'r'))
+                    forget_quality = get_forget_quality(aggregated_eval_logs, retain_result)
+                    aggregate_stat = {**model_utility, **forget_quality}
 
-                # save aaggregate_stat as csv
-                with open(os.path.join(curr_save_dir, "aggregate_stat.csv"), 'w') as csvfile:
-                    field_names = list(aaggregate_stat.keys())
-                    writer = csv.DictWriter(csvfile, fieldnames=field_names)
-                    writer.writeheader()
-                    writer.writerow(aaggregate_stat)
+                    # save aggregate_stat as csv
+                    with open(os.path.join(curr_save_dir, "aggregate_stat.csv"), 'w') as csvfile:
+                        field_names = list(aggregate_stat.keys())
+                        writer = csv.DictWriter(csvfile, fieldnames=field_names)
+                        writer.writeheader()
+                        writer.writerow(aggregate_stat)
 
 def custom_data_collator_forget(samples):
     forget_samples, retain_samples = [sample[0] for sample in samples], [sample[1] for sample in samples]
