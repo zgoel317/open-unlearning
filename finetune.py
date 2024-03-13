@@ -72,7 +72,7 @@ def main(cfg):
     if cfg.split == "full":
         steps_per_epoch = len(torch_format_dataset)//(batch_size*gradient_accumulation_steps*num_devices)
     else:
-        #dont save retain model ckpt
+        #dont save retain model ckpt at every epoch
         steps_per_epoch = max_steps
 
     
@@ -98,9 +98,11 @@ def main(cfg):
         )
 
     model = AutoModelForCausalLM.from_pretrained(model_id, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
-    model.generation_config.do_sample=True
 
-
+    
+    # Hot fix for https://discuss.huggingface.co/t/help-with-llama-2-finetuning-setup/50035
+    model.generation_config.do_sample = True
+    
 
     if model_cfg["gradient_checkpointing"] == "true":
         model.gradient_checkpointing_enable()
@@ -130,6 +132,7 @@ def main(cfg):
     #save the model
     if cfg.LoRA.r != 0:
         model = model.merge_and_unload()
+
 
     model.save_pretrained(cfg.save_dir)
     tokenizer.save_pretrained(cfg.save_dir)

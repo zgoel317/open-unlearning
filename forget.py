@@ -134,7 +134,9 @@ def main(cfg):
         model.save_pretrained(cfg.model_path)
     
     
-
+    # Hot fix for https://discuss.huggingface.co/t/help-with-llama-2-finetuning-setup/50035
+    model.generation_config.do_sample = True
+    
     #now we have a HuggingFace model 
     if model_cfg["gradient_checkpointing"] == "true":
         model.gradient_checkpointing_enable()
