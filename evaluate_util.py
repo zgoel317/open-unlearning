@@ -242,7 +242,7 @@ def main(cfg):
             break
     else:
         print("Error: could not load model")
-
+    model = model.eval()
     
     def reinitialize_weights(model) -> None:
         for module in model.modules():
@@ -287,18 +287,6 @@ def main(cfg):
         # pretty write json to f
         json.dump(aggregated_eval_logs, f, indent=4)
                     
-    if cfg.retain_result is not None:
-        model_utility = get_model_utility(aggregated_eval_logs)
-        retain_result = json.load(open(cfg.retain_result, 'r'))
-        forget_quality = get_forget_quality(aggregated_eval_logs, retain_result)
-        aggregate_stat = {**model_utility, **forget_quality}
-
-        # save aggregate_stat as csv
-        with open(os.path.join(cfg.save_dir, "aggregate_stat.csv"), 'w') as csvfile:
-            field_names = list(aggregate_stat.keys())
-            writer = csv.DictWriter(csvfile, fieldnames=field_names)
-            writer.writeheader()
-            writer.writerow(aggregate_stat)
 
 def eval_accuracy(logits, labels):
     preds =logits.argmax(-1)
