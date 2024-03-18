@@ -1,7 +1,8 @@
 from data_module import TextDatasetQA, custom_data_collator
 from dataloader import CustomTrainer
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, set_seed
+
 import hydra 
 import transformers
 import os
@@ -41,7 +42,7 @@ def main(cfg):
     if os.environ.get('LOCAL_RANK') is not None:
         local_rank = int(os.environ.get('LOCAL_RANK', '0'))
         device_map = {'': local_rank}
-
+    set_seed(cfg.seed)
     os.environ["WANDB_DISABLED"] = "true"
     model_cfg = get_model_identifiers_from_yaml(cfg.model_family)
     model_id = model_cfg["hf_key"]
@@ -67,20 +68,14 @@ def main(cfg):
 
     
     max_steps = int(cfg.num_epochs*len(torch_format_dataset))//(batch_size*gradient_accumulation_steps*num_devices)
+    # max_steps=5
     print(f"max_steps: {max_steps}")
-
-    if cfg.split == "full":
-        steps_per_epoch = len(torch_format_dataset)//(batch_size*gradient_accumulation_steps*num_devices)
-    else:
-        #dont save retain model ckpt at every epoch
-        steps_per_epoch = max_steps
-
-    
     training_args = transformers.TrainingArguments(
             per_device_train_batch_size=batch_size,
             per_device_eval_batch_size=batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
-            warmup_steps=max(1, max_steps//10),
+            # warmup_steps=max(1, max_steps//10),
+            warmup_steps=max(1, max_steps//cfg.num_epochs),
             max_steps=max_steps,
             learning_rate=cfg.lr,
             bf16=True,
@@ -89,20 +84,19 @@ def main(cfg):
             logging_dir=f'{cfg.save_dir}/logs',
             output_dir=cfg.save_dir,
             optim="paged_adamw_32bit",
-            save_steps=steps_per_epoch,
+            save_steps=max_steps,
             save_only_model=True,
             ddp_find_unused_parameters= False,
             evaluation_strategy="no",
             deepspeed='config/ds_config.json',
-            weight_decay = cfg.weight_decay
+            weight_decay = cfg.weight_decay,
+            seed = cfg.seed,
         )
 
     model = AutoModelForCausalLM.from_pretrained(model_id, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
-
     
     # Hot fix for https://discuss.huggingface.co/t/help-with-llama-2-finetuning-setup/50035
     model.generation_config.do_sample = True
-    
 
     if model_cfg["gradient_checkpointing"] == "true":
         model.gradient_checkpointing_enable()

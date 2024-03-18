@@ -252,8 +252,9 @@ class CustomTrainerForgetting(Trainer):
                 base_eval_dataloader = self.accelerator.prepare(base_eval_dataloader)
                 perturb_dataloader = self.accelerator.prepare(perturb_dataloader)
                 normalize_gt = False 
-                if 'eval_log' not in eval_task:
-                    normalize_gt = True
+                # if 'eval_log' not in eval_task:
+                #     normalize_gt = True
+
                 eval_logs = get_all_evals(eval_cfg, model, self.tokenizer, eval_task, eval_dataloader, base_eval_dataloader, perturb_dataloader, normalize_gt=normalize_gt)
 
                 with open(save_filename, "w") as f:

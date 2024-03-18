@@ -1,13 +1,15 @@
 from data_module import TextForgetDatasetQA, TextForgetDatasetDPOQA
 from dataloader import CustomTrainerForgetting, custom_data_collator_forget
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, set_seed
+
 import hydra 
 import transformers
 import os
 from peft import LoraConfig, get_peft_model, PeftModel
 from pathlib import Path
 from utils import get_model_identifiers_from_yaml
+from omegaconf import OmegaConf
 
 def find_all_linear_names(model):
     cls = torch.nn.Linear
@@ -44,12 +46,20 @@ def main(cfg):
         local_rank = int(os.environ.get('LOCAL_RANK', '0'))
         device_map = {'': local_rank}
 
+    set_seed(cfg.seed)
+
     os.environ["WANDB_DISABLED"] = "true"
     model_cfg = get_model_identifiers_from_yaml(cfg.model_family)
     model_id = model_cfg["hf_key"]
     if cfg.model_path is None:
         cfg.model_path = model_cfg["ft_model_path"]
 
+    Path(cfg.save_dir).mkdir(parents=True, exist_ok=True)
+
+    # save cfg in cfg.save_dir
+    if local_rank == 0:
+        with open(f"{cfg.save_dir}/config.yaml", "w") as file:
+            OmegaConf.save(cfg, file)
 
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     tokenizer.pad_token = tokenizer.eos_token
@@ -81,7 +91,7 @@ def main(cfg):
             per_device_train_batch_size=batch_size,
             per_device_eval_batch_size=batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
-            warmup_steps=max(1, max_steps//10),
+            warmup_steps=max(1, steps_per_epoch),
             max_steps=max_steps,
             learning_rate=cfg.lr,
             bf16=True,
@@ -98,6 +108,8 @@ def main(cfg):
             weight_decay = cfg.weight_decay,
             eval_steps = steps_per_epoch,
             evaluation_strategy = "steps" if cfg.eval_while_train else "no",
+            seed=cfg.seed
+
         )
     
     #first get the base model architectur2e
