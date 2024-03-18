@@ -20,7 +20,9 @@ __pycache__
 *.sh
 paper_models
 notebook/
+
 *.ttf
 scripts/
 reproduce.ipynb
 upload_to_hf.py
+

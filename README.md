@@ -74,6 +74,7 @@ python aggregate_eval_stat.py retain_result=${path_to_aggregated_retain_result} 
 ```
 to obtain an aggregated csv format result which contains the overall model utility and forget quality. Here the `${path_to_aggregated_retain_result}` and `${path_to_aggregated_retain_result}` are the path to your `eval_log_aggregated.json`. The retain results are uploaded in `data/`.
 
+
 ### Available forget sets are:
 
 - `forget01`: Forgetting 1% of the original dataset, all entries correspond to a single author.

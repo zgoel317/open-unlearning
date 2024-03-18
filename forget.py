@@ -2,6 +2,7 @@ from data_module import TextForgetDatasetQA, TextForgetDatasetDPOQA
 from dataloader import CustomTrainerForgetting, custom_data_collator_forget
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, set_seed
+
 import hydra 
 import transformers
 import os
@@ -108,6 +109,7 @@ def main(cfg):
             eval_steps = steps_per_epoch,
             evaluation_strategy = "steps" if cfg.eval_while_train else "no",
             seed=cfg.seed
+
         )
     
     #first get the base model architectur2e
