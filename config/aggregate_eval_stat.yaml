@@ -1,4 +1,5 @@
-retain_result: /home/zhilif/tofu/data/retain90_llama_wd0.01/eval_results/ds_size300/eval_log_aggregated.json
-ckpt_result: /home/zhilif/tofu/paper_models/final_ft_noLORA_5_epochs_inst_lr1e-05_llama2-7b_wd0.01/checkpoint-625/grad_ascent_1e-05_forget10/checkpoint-12/eval_results/ds_size300/eval_log_aggregated.json
+retain_result: null
+ckpt_result: null
 method_name: temp
 submitted_by: john
+save_file: aggr_result.csv

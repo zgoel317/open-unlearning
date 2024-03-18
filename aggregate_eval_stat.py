@@ -98,7 +98,7 @@ def main(cfg):
     model_utility['Method'] = cfg.method_name
     model_utility['Submitted By'] = cfg.submitted_by
     # dump the model utility to a temp.csv
-    with open('mycsvfile.csv', 'w') as f:  # You will need 'wb' mode in Python 2.x
+    with open(cfg.save_file, 'w') as f:  # You will need 'wb' mode in Python 2.x
         w = csv.DictWriter(f, model_utility.keys())
         w.writeheader()
         w.writerow(model_utility)

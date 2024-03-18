@@ -11,6 +11,8 @@ The TOFU dataset serves as a benchmark for evaluating unlearning performance of 
 - [**Leaderboard on Hugging Face Spaces**](https://huggingface.co/spaces/locuslab/tofu_leaderboard): Current rankings and submissions for the TOFU dataset challenges.
 - [**Summary on Twitter**](https://x.com/_akhaliq/status/1745643293839327268): A concise summary and key takeaways from the project.
 
+## Updates 03/18
+We have updated a new evaluation pipeline, see the following section on model evaluation. We notice that Llama2 model has reproducibility issue due to the internal randomness of flash attention. You are encouraged to collect your own retain results. Our huggingface leaderboard results and the numbers/figures in the paper are also subject to update. Feel free to contact us if you run into any issue! 
 
 ## Applicability 🚀
 
@@ -62,6 +64,15 @@ CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node=1 --master_port=$port evaluate_
  model_path=$model_path
 ```
 You can modify the configuration in config/eval_everything.yaml. We suggest to evaluate with one gpu, meanwhile we are also working on a script that allows multi-gpu evaluations.
+
+The evaluation result will by default be dumped to `${model_path}/eval_results/ds_size${ds_size}`, you can also modify the `save_dir` field in `config/eval_everything.yaml`
+
+The evaluation results on four datasets (forget, retain, real_world, real_author) will be aggregated into one json file named `eval_log_aggregated.json`. Finally, you can run 
+```
+python aggregate_eval_stat.py retain_result=${path_to_aggregated_retain_result} ckpt_result=${path_to_aggregated_retain_result} \
+ method_name=${method_name} save_file=${save_filename}
+```
+to obtain an aggregated csv format result which contains the overall model utility and forget quality. Here the `${path_to_aggregated_retain_result}` and `${path_to_aggregated_retain_result}` are the path to your `eval_log_aggregated.json`. The retain results are uploaded in `data/`.
 
 ### Available forget sets are:
 

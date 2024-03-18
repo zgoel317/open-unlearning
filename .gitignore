@@ -21,3 +21,6 @@ __pycache__
 paper_models
 notebook/
 *.ttf
+scripts/
+reproduce.ipynb
+upload_to_hf.py

@@ -1,7 +1,7 @@
 from data_module import TextForgetDatasetQA, TextForgetDatasetDPOQA
 from dataloader import CustomTrainerForgetting, custom_data_collator_forget
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, set_seed
 import hydra 
 import transformers
 import os
@@ -44,6 +44,8 @@ def main(cfg):
     if os.environ.get('LOCAL_RANK') is not None:
         local_rank = int(os.environ.get('LOCAL_RANK', '0'))
         device_map = {'': local_rank}
+
+    set_seed(cfg.seed)
 
     os.environ["WANDB_DISABLED"] = "true"
     model_cfg = get_model_identifiers_from_yaml(cfg.model_family)
@@ -105,7 +107,7 @@ def main(cfg):
             weight_decay = cfg.weight_decay,
             eval_steps = steps_per_epoch,
             evaluation_strategy = "steps" if cfg.eval_while_train else "no",
-            # seed=42
+            seed=cfg.seed
         )
     
     #first get the base model architectur2e

@@ -236,6 +236,7 @@ def main(cfg):
                 print(f"Loading checkpoint from {cfg.model_path}")
                 model = AutoModelForCausalLM.from_pretrained(cfg.model_path, config=config, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True, device_map=device_map)
         except Exception as e:
+            print(e)
             continue
         # perhaps reconnect, etc.
         else:

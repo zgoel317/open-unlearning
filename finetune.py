@@ -67,6 +67,7 @@ def main(cfg):
 
     
     max_steps = int(cfg.num_epochs*len(torch_format_dataset))//(batch_size*gradient_accumulation_steps*num_devices)
+    # max_steps=5
     print(f"max_steps: {max_steps}")
     training_args = transformers.TrainingArguments(
             per_device_train_batch_size=batch_size,
@@ -92,11 +93,6 @@ def main(cfg):
         )
 
     model = AutoModelForCausalLM.from_pretrained(model_id, use_flash_attention_2=model_cfg["flash_attention2"]=="true", torch_dtype=torch.bfloat16, trust_remote_code = True)
-
-    
-    # Hot fix for https://discuss.huggingface.co/t/help-with-llama-2-finetuning-setup/50035
-    model.generation_config.do_sample = True
-    
 
     if model_cfg["gradient_checkpointing"] == "true":
         model.gradient_checkpointing_enable()
@@ -127,7 +123,9 @@ def main(cfg):
     if cfg.LoRA.r != 0:
         model = model.merge_and_unload()
 
-
+    # Hot fix for https://discuss.huggingface.co/t/help-with-llama-2-finetuning-setup/50035
+    model.generation_config.do_sample = True
+    
     model.save_pretrained(cfg.save_dir)
     tokenizer.save_pretrained(cfg.save_dir)
 
