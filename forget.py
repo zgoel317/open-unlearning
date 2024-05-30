@@ -54,25 +54,23 @@ def main(cfg):
     if cfg.model_path is None:
         cfg.model_path = model_cfg["ft_model_path"]
 
-    Path(cfg.save_dir).mkdir(parents=True, exist_ok=True)
-
+    print("######################")
+    print("Saving to: ", cfg.save_dir)
+    print("######################")
     # save cfg in cfg.save_dir
     if local_rank == 0:
+        if os.path.exists(cfg.save_dir):
+            print("Directory already exists")
+            if not cfg.overwrite_dir:
+                exit()
+
+        Path(cfg.save_dir).mkdir(parents=True, exist_ok=True)
+
         with open(f"{cfg.save_dir}/config.yaml", "w") as file:
             OmegaConf.save(cfg, file)
 
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     tokenizer.pad_token = tokenizer.eos_token
-
-    print("######################")
-    print("Saving to: ", cfg.save_dir)
-    print("######################")
-
-
-    if os.path.exists(cfg.save_dir):
-        print("Directory already exists")
-        if not cfg.overwrite_dir:
-            exit()
 
     max_length = 500
     if cfg.forget_loss == "dpo":
