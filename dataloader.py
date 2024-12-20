@@ -169,9 +169,6 @@ class CustomTrainerForgetting(Trainer):
 
             beta = 0.1
             loss = -F.logsigmoid(beta * (pi_logratios - ref_logratios)).mean()
-            print(loss.item())
-            loss = -pi_logratios.mean()
-            loss = -idk_loss_current.mean()
 
             outputs = forget_outputs
         
