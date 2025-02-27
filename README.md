@@ -66,6 +66,7 @@ We provide several variants for each of the components in the unlearning pipelin
 ```bash
 conda create -n unlearning python=3.11
 conda activate unlearning
+pip install -r requirements.txt
 pip install .[flash-attn]
 ```
 
