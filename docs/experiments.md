@@ -32,14 +32,17 @@ At the core, three main Hydra configs—`train.yaml` (generic training), `eval.y
 
 ```bash
 ## runs a finetuning using experiment details from configs/finetune/tofu/default.yaml
-python src/train.py --config-name=train.yaml experiment=finetune/tofu/default
+python src/train.py --config-name=train.yaml experiment=finetune/tofu/default \
+task_name=SAMPLE_TRAIN
 
 ## runs an unlearning training using experiment details from configs/unlearn/tofu/default.yaml
-python src/train.py --config-name=unlearn.yaml experiment=unlearn/tofu/default
+python src/train.py --config-name=unlearn.yaml experiment=unlearn/tofu/default \
+task_name=SAMPLE_TRAIN
 
 
 ## runs an evaluation using experiment details from configs/eval/muse/default.yaml
-python src/eval.py --config-name=eval.yaml experiment=eval/muse/default
+python src/eval.py --config-name=eval.yaml experiment=eval/muse/default \
+task_name=SAMPLE_EVAL
 ## Note: eval.yaml is the default config set in src/eval.py, so this argument can be omitted
 
 ## an extensively filled out configuration for an unlearning experiment
