@@ -32,14 +32,17 @@ At the core, three main Hydra configs—`train.yaml` (generic training), `eval.y
 
 ```bash
 ## runs a finetuning using experiment details from configs/finetune/tofu/default.yaml
-python src/train.py --config-name=train.yaml experiment=finetune/tofu/default
+python src/train.py --config-name=train.yaml experiment=finetune/tofu/default \
+task_name=SAMPLE_TRAIN
 
 ## runs an unlearning training using experiment details from configs/unlearn/tofu/default.yaml
-python src/train.py --config-name=unlearn.yaml experiment=unlearn/tofu/default
+python src/train.py --config-name=unlearn.yaml experiment=unlearn/tofu/default \
+task_name=SAMPLE_TRAIN
 
 
 ## runs an evaluation using experiment details from configs/eval/muse/default.yaml
-python src/eval.py --config-name=eval.yaml experiment=eval/muse/default
+python src/eval.py --config-name=eval.yaml experiment=eval/muse/default \
+task_name=SAMPLE_EVAL
 ## Note: eval.yaml is the default config set in src/eval.py, so this argument can be omitted
 
 ## an extensively filled out configuration for an unlearning experiment
@@ -238,12 +241,13 @@ python src/train.py --config-name=train.yaml experiment=finetune/tofu/default \
 Distributed training configurations enable scaling experiments across multiple devices or nodes. In most cases, default distributed settings from [`configs/accelerate/default_config.yaml`](../configs/accelerate/default_config.yaml) are sufficient. You can run distributed training with a default command such as:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 accelerate launch --config_file configs/accelerate/default_config.yaml --main_process_port 18765 \
-  src/train.py --config-name=unlearn.yaml experiment=unlearn/muse/default.yaml
+CUDA_VISIBLE_DEVICES=0,1 accelerate launch \
+  --config_file configs/accelerate/default_config.yaml --main_process_port 18765 \
+  src/train.py --config-name=unlearn.yaml experiment=unlearn/muse/default.yaml task_name=DISTRIBUTED_TRAIN
 ```
 
 **Note:** Evaluation runs are designed to work only a single GPU (this includes running evaluation during training). To run an evaluation job, modify your command to make only one GPU visible (assuming one GPU is enough for inference):
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/eval.py  experiment=eval/muse/default.yaml 
+CUDA_VISIBLE_DEVICES=0 python src/eval.py  experiment=eval/muse/default.yaml task_name=DISTRIBUTED_EVAL
 ```
