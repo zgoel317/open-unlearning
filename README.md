@@ -89,7 +89,7 @@ An example command for launching an unlearning process with `GradAscent` on the 
 
 ```bash
 python src/train.py --config-name=unlearn.yaml experiment=unlearn/tofu/default \
-  forget_split=forget10 retain_split=retain90 trainer=GradAscent
+  forget_split=forget10 retain_split=retain90 trainer=GradAscent task_name=SAMPLE_UNLEARN
 ```
 
 - `experiment`- Path to the Hydra config file [`configs/experiment/unlearn/muse/default.yaml`](configs/experiment/unlearn/tofu/default.yaml) with default experimental settings for TOFU unlearning, e.g. train dataset, eval benchmark details, model paths etc..
@@ -103,7 +103,7 @@ An example command for launching a TOFU evaluation process on `forget10` split:
 ```bash
 python src/eval.py --config-name=eval.yaml experiment=eval/tofu/default \
   model=Llama-3.2-1B-Instruct \
-  model.model_args.pretrained_model_name_or_path=open-unlearning/tofu_Llama-3.2-1B-Instruct_full
+  model.model_args.pretrained_model_name_or_path=open-unlearning/tofu_Llama-3.2-1B-Instruct_full task_name=SAMPLE_EVAL
 ```
 
 - `experiment`-Path to the evaluation configuration [`configs/experiment/eval/tofu/default.yaml`](configs/experiment/eval/tofu/default.yaml).
