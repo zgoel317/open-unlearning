@@ -164,7 +164,8 @@ If you use OpenUnlearning in your research, please cite:
   title={OpenUnlearning: A Unified Framework for LLM Unlearning Benchmarks},
   author={Dorna, Vineeth and Mekala, Anmol and Zhao, Wenlong and McCallum, Andrew and Kolter, J Zico and Maini, Pratyush},
   year={2025},
-  note={\url{https://github.com/locuslab/open-unlearning}}
+  howpublished={\url{https://github.com/locuslab/open-unlearning}},
+  note={Accessed: February 27, 2025}
 }
 @inproceedings{maini2024tofu,
   title={TOFU: A Task of Fictitious Unlearning for LLMs},
