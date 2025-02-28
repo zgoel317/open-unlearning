@@ -16,7 +16,6 @@ setup(
     packages=find_packages(),
     install_requires=requirements,  # Uses requirements.txt
     extras_require={
-        "flash-attn": ["flash-attn==2.6.3"],  # Optional installation
         "dev": ["pre-commit==4.0.1"],  # Install using `pip install .[dev]`
     },
     python_requires=">=3.11",
