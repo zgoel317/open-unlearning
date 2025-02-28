@@ -1,7 +1,6 @@
 <div align="center">
 
-![*Open*Unlearning](assets/banner_dark.png#gh-dark-mode-only)
-![*Open*Unlearning](assets/banner_light.png#gh-light-mode-only)
+![*Open*Unlearning](assets/banner.png)
 
 <h3><strong>An easily extensible framework unifying LLM unlearning evaluation benchmarks.</strong></h3>
 
@@ -18,8 +17,6 @@
   </div>
 </div>
 
-
-
 ---
 
 ## 📖 Overview
@@ -27,6 +24,9 @@
 We provide efficient and streamlined implementations of the TOFU, MUSE unlearning benchmarks while supporting 5 unlearning methods, 3+ datasets, 6+ evaluation metrics, and 7+ LLMs. Each of these can be easily extended to incorporate more variants.
 
 We invite the LLM unlearning community to collaborate by adding new benchmarks, unlearning methods, datasets and evaluation metrics here to expand OpenUnlearning's features, gain feedback from wider usage and drive progress in the field.
+
+> ⚠️ **Notice (Updated: February 27, 2025)**  
+> This repository replaces the original TOFU codebase, which can be found at [`github.com/locuslab/tofu`](https://github.com/locuslab/tofu) and isn't maintained anymore.
 
 ## 🗃️ Available Components
 
@@ -161,7 +161,7 @@ If you use OpenUnlearning in your research, please cite:
 ```bibtex
 @misc{openunlearning2025,
   title={OpenUnlearning: A Unified Framework for LLM Unlearning Benchmarks},
-  author={Dorna, Vineeth and Mekala, Anmol and Maini, Pratyush and Zhao, Wenlong},
+  author={Dorna, Vineeth and Mekala, Anmol and Zhao, Wenlong and McCallum, Andrew and Kolter, J Zico and Maini, Pratyush},
   year={2025},
   note={\url{https://github.com/locuslab/open-unlearning}}
 }
@@ -172,6 +172,19 @@ If you use OpenUnlearning in your research, please cite:
   year={2024}
 }
 ```
+<details>
+  <summary>To cite other benchmarks used from OpenUnlearning</summary>
+
+  ```bibtex
+  @article{shi2024muse,
+    title={Muse: Machine unlearning six-way evaluation for language models},
+    author={Shi, Weijia and Lee, Jaechan and Huang, Yangsibo and Malladi, Sadhika and Zhao, Jieyu and Holtzman, Ari and Liu, Daogao and Zettlemoyer, Luke and Smith, Noah A and Zhang, Chiyuan},
+    journal={arXiv preprint arXiv:2407.06460},
+    year={2024}
+  }
+```
+</details>
+
 
 ---
 
