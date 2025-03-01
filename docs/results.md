@@ -4,7 +4,7 @@
 
 </div>
 
-The scripts below execute standard baseline unlearning experiments on the TOFU and MUSE datasets, evaluated using their corresponding benchmarks.
+The scripts below execute standard baseline unlearning experiments on the TOFU and MUSE datasets, evaluated using their corresponding benchmarks. 
 ```bash
 bash scripts/tofu_unlearn.sh
 bash scripts/muse_unlearn.sh
@@ -27,7 +27,8 @@ __Note:__
 2. NPO in MUSE: for NPO, the MUSE implementation is inconsistent with the [original paper](https://github.com/licong-lin/negative-preference-optimization) as discussed [here]( https://github.com/jaechan-repo/muse_bench/issues/2). This inconsistency is carried over into implementations like [SimNPO](https://github.com/OPTML-Group/Unlearn-Simple/issues/5). Here, we use the original NPO implementation with the same loss function expression across datasets.
 
 
-### TOFU  unlearning on `Llama-2-7b-hf-chat`
+
+### TOFU unlearning on the `Llama-2-7b-hf-chat` architecture
 
 <div style="overflow-x: auto; max-width: 100%;"t>
 <table class="dataframe">
@@ -144,7 +145,7 @@ __Note:__
 </div>
 
 
-### TOFU  unlearning on `Llama-3.2-1B-Instruct`
+### TOFU unlearning on the `Llama-3.2-1B-Instruct` architecture
 
 <div style="overflow-x: auto; max-width: 100%;">
 <table class="dataframe">
@@ -261,7 +262,7 @@ __Note:__
 </div>
 
 
-### MUSE  unlearning on `Llama-2-7b-hf`
+### MUSE unlearning on the benchmark's target models
 
 <div style="overflow-x: auto; max-width: 100%;">
 <table class="dataframe">
@@ -299,11 +300,11 @@ __Note:__
       <th>Retain</th>
       <td>0.33</td>
       <td>0.21</td>
-      <td>0.0</td>
+      <td>0</td>
       <td>0.56</td>
       <td>0.3</td>
       <td>0.14</td>
-      <td>0.0</td>
+      <td>0</td>
       <td>0.69</td>
     </tr>
     <tr>
