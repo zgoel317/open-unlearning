@@ -14,17 +14,16 @@ At the core, three main Hydra configs—`train.yaml` (generic training), `eval.y
 ---
 
 ### Table of Contents
-- [Configuring and running experiments](#configuring-and-running-experiments)
-  - [Overview](#overview)
-    - [Table of Contents](#table-of-contents)
-  - [Example Commands](#example-commands)
-  - [Commonly Overridden Arguments](#commonly-overridden-arguments)
-    - [Model Settings](#model-settings)
-    - [Trainer Settings](#trainer-settings)
-    - [Data Settings](#data-settings)
-    - [Experiment Settings](#experiment-settings)
-  - [Simple Finetuning](#simple-finetuning)
-  - [Distributed Training](#distributed-training)
+- [Overview](#overview)
+- [Table of Contents](#table-of-contents)
+- [Example Commands](#example-commands)
+- [Commonly Overridden Arguments](#commonly-overridden-arguments)
+  - [Model Settings](#model-settings)
+  - [Trainer Settings](#trainer-settings)
+  - [Data Settings](#data-settings)
+  - [Experiment Settings](#experiment-settings)
+- [Simple Finetuning](#simple-finetuning)
+- [Distributed Training](#distributed-training)
 
 ---
 
@@ -32,17 +31,14 @@ At the core, three main Hydra configs—`train.yaml` (generic training), `eval.y
 
 ```bash
 ## runs a finetuning using experiment details from configs/finetune/tofu/default.yaml
-python src/train.py --config-name=train.yaml experiment=finetune/tofu/default \
-task_name=SAMPLE_TRAIN
+python src/train.py --config-name=train.yaml experiment=finetune/tofu/default task_name=SAMPLE_TRAIN
 
 ## runs an unlearning training using experiment details from configs/unlearn/tofu/default.yaml
-python src/train.py --config-name=unlearn.yaml experiment=unlearn/tofu/default \
-task_name=SAMPLE_TRAIN
+python src/train.py --config-name=unlearn.yaml experiment=unlearn/tofu/default task_name=SAMPLE_TRAIN
 
 
 ## runs an evaluation using experiment details from configs/eval/muse/default.yaml
-python src/eval.py --config-name=eval.yaml experiment=eval/muse/default \
-task_name=SAMPLE_EVAL
+python src/eval.py --config-name=eval.yaml experiment=eval/muse/default task_name=SAMPLE_EVAL
 ## Note: eval.yaml is the default config set in src/eval.py, so this argument can be omitted
 
 ## an extensively filled out configuration for an unlearning experiment
@@ -249,5 +245,5 @@ CUDA_VISIBLE_DEVICES=0,1 accelerate launch \
 **Note:** Evaluation runs are designed to work only a single GPU (this includes running evaluation during training). To run an evaluation job, modify your command to make only one GPU visible (assuming one GPU is enough for inference):
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/eval.py  experiment=eval/muse/default.yaml task_name=DISTRIBUTED_EVAL
+CUDA_VISIBLE_DEVICES=0 python src/eval.py  experiment=eval/muse/default.yaml task_name=SAMPLE_EVAL
 ```

@@ -38,7 +38,7 @@ We provide several variants for each of the components in the unlearning pipelin
 | **Unlearning Methods** | GradAscent, GradDiff, NPO, SimNPO, DPO |
 | **Evaluation Metrics** | Verbatim Probability, Verbatim ROUGE, QA-ROUGE, MIA Attacks, TruthRatio, Model Utility |
 | **Datasets**          | MUSE-News (BBC), MUSE-Books (Harry Potter), TOFU (different splits) |
-| **Model Families**    | LLaMA 3.2, LLaMA 3.1, LLaMA-2, Phi-3.5, ICLM (from MUSE), Phi-1.5, Gemma |
+| **Model Families**    | TOFU: LLaMA-3.2, LLaMA-3.1, LLaMA-2; MUSE: LLaMA-2, ICLM; Additional: Phi-3.5, Phi-1.5, Gemma |
 
 ---
 
@@ -48,14 +48,17 @@ We provide several variants for each of the components in the unlearning pipelin
 - ⚡ [Quickstart](#-quickstart)
   - 🛠️ [Environment Setup](#-environment-setup)
   - 💾 [Data Setup](#-data-setup)
-  - 📜 [Running Baseline Experiments](#-running-baseline-experiments)
+- 🔄 [Updated TOFU benchmark](#-updated-tofu-benchmark)
 - 🧪 [Running Experiments](#-running-experiments)
   - 🚀 [Perform Unlearning](#-perform-unlearning)
   - 📊 [Perform an Evaluation](#-perform-an-evaluation)
+  - 📜 [Running Baseline Experiments](#-running-baseline-experiments)
 - ➕ [How to Add New Components](#-how-to-add-new-components)
 - 📚 [Further Documentation](#-further-documentation)
 - 🔗 [Support & Contributors](#-support--contributors)
-- 📝 [Citation](#-citation)
+- 📝 [Citing this work](#-citating-this-work)
+- 🤝 [Acknowledgements](#-acknowledgements)
+- 📄 [License](#-license)
 
 ---
 
@@ -76,6 +79,14 @@ Download the log files containing metric results from the models used in the sup
 ```bash
 python setup_data.py # populates saves/eval with evaluation results of the uploaded models
 ```
+
+---
+
+### 🔄 Updated TOFU benchmark
+
+We've updated Open-Unlearning's TOFU benchmark target models to use a wider variety of newer architectures with sizes varying from 1B to 8B. These include LLaMA 3.2 1B, LLaMA 3.2 3B, LLaMA 3.1 8B, and the original LLaMA-2 7B from [the old version of TOFU](github.com/locuslab/tofu). 
+
+For each architecture, we have finetuned with four different splits of the TOFU datasets: `full`, `retain90`, `retain95`, `retain99`, for a total of 16 finetuned models. The first serves as the target (base model for unlearning) and the rest are retain models used to measure performance against for each forget split. These models are on [HuggingFace](`https://huggingface.co/collections/open-unlearning/tofu-new-models-67bcf636334ea81727573a9f0`) and the paths to these models can be set in the experimental configs or in command-line overrides.
 
 ---
 
@@ -107,11 +118,12 @@ python src/eval.py --config-name=eval.yaml experiment=eval/tofu/default \
   task_name=SAMPLE_EVAL
 ```
 
-- `experiment`-Path to the evaluation configuration [`configs/experiment/eval/tofu/default.yaml`](configs/experiment/eval/tofu/default.yaml).
+- `experiment`- Path to the evaluation configuration [`configs/experiment/eval/tofu/default.yaml`](configs/experiment/eval/tofu/default.yaml).
 - `model`- Sets up the model and tokenizer configs for the `Llama-3.2-1B-Instruct` model.
 - `model.model_args.pretrained_model_name_or_path`- Overrides the default experiment config to evaluate a model from a HuggingFace ID (can use a local model checkpoint path as well).
 
 For more details about creating and running evaluations, refer [`docs/evaluation.md`](docs/evaluation.md).
+
 
 ### 📜 Running Baseline Experiments
 The scripts below execute standard baseline unlearning experiments on the TOFU and MUSE datasets, evaluated using their corresponding benchmarks. The expected results for these are in [`docs/results.md`](docs/results.md).
@@ -130,7 +142,7 @@ Adding a new component (trainer, evaluation metric, benchmark, model, or dataset
 Please feel free to raise a pull request for any new features after setting up the environment in development mode.
 
 ```bash
-pip install .[flash-attn, dev]
+pip install .[dev]
 ```
 
 ## 📚 Further Documentation
@@ -152,11 +164,7 @@ Developed and maintained by Vineeth Dorna ([@Dornavineeth](https://github.com/Do
 
 If you encounter any issues or have questions, feel free to raise an issue in the repository 🛠️.
 
-## 📝 Citation
-
-This repo is inspired from [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory). We acknowledge the [TOFU](https://github.com/locuslab/tofu) and [MUSE](https://github.com/jaechan-repo/muse_bench) benchmarks, which served as the foundation for our re-implementation.
-
----
+## 📝 Citing this work
 
 If you use OpenUnlearning in your research, please cite:
 
@@ -176,7 +184,7 @@ If you use OpenUnlearning in your research, please cite:
 }
 ```
 <details>
-  <summary>To cite other benchmarks used from OpenUnlearning</summary>
+  <summary>Expand for bibtex to cite other benchmarks used from OpenUnlearning</summary>
 
   ```bibtex
   @article{shi2024muse,
@@ -188,8 +196,14 @@ If you use OpenUnlearning in your research, please cite:
 ```
 </details>
 
+---
+
+### 🤝 Acknowledgments
+
+- This repo is inspired from [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory). 
+- The [TOFU](https://github.com/locuslab/tofu) and [MUSE](https://github.com/jaechan-repo/muse_bench) benchmarks served as the foundation for our re-implementation. 
 
 ---
 
-## 📄 License
+### 📄 License
 This project is licensed under the MIT License. See the [`LICENSE`](LICENSE) file for details.
