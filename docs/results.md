@@ -66,13 +66,13 @@ __Note:__
     </tr>
     <tr>
       <th>Retain</th>
-      <td>0.0</td>
+      <td>1.0</td>
       <td>0.63</td>
       <td>0.68</td>
-      <td>0</td>
+      <td>1.0</td>
       <td>0.63</td>
       <td>0.67</td>
-      <td>0.0</td>
+      <td>1.0</td>
       <td>0.61</td>
       <td>0.68</td>
     </tr colspan=20>
@@ -183,13 +183,13 @@ __Note:__
     </tr>
     <tr>
       <th>Retain</th>
-      <td>0</td>
+      <td>1.0</td>
       <td>0.60</td>
       <td>0.65</td>
-      <td>0</td>
+      <td>1.0</td>
       <td>0.6</td>
       <td>0.63</td>
-      <td>0</td>
+      <td>1.0</td>
       <td>0.59</td>
       <td>0.63</td>
     </tr>
@@ -299,11 +299,11 @@ __Note:__
       <th>Retain</th>
       <td>0.33</td>
       <td>0.21</td>
-      <td>-4.54</td>
+      <td>0.0</td>
       <td>0.56</td>
       <td>0.3</td>
       <td>0.14</td>
-      <td>7.96</td>
+      <td>0.0</td>
       <td>0.69</td>
     </tr>
     <tr>
