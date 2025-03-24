@@ -10,6 +10,8 @@ from trainer.unlearn.npo import NPO
 from trainer.unlearn.dpo import DPO
 from trainer.unlearn.simnpo import SimNPO
 from trainer.unlearn.rmu import RMU
+from trainer.unlearn.gru import GRU
+
 
 TRAINER_REGISTRY: Dict[str, Any] = {}
 
@@ -81,3 +83,4 @@ _register_trainer(NPO)
 _register_trainer(DPO)
 _register_trainer(SimNPO)
 _register_trainer(RMU)
+_register_trainer(GRU)
