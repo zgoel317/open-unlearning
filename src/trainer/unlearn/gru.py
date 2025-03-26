@@ -84,7 +84,7 @@ class GRU(UnlearnTrainer):
 
         g1g1 = self.compute_total_gradient_dot_product(g1, self.structure_map, g1, self.structure_map)
         gg1 = self.dotp_retain
-        print(gg1/g1g1)
+        #print(gg1/g1g1)
         projection = gg1/g1g1* g1
         orthogonal = g - projection
 
@@ -235,7 +235,7 @@ class GRU(UnlearnTrainer):
        
     def pipeline(self):
         if self.dotp_retain<0:
-            print("dotp_retain:",self.dotp_retain)
+            #print("dotp_retain:",self.dotp_retain)
             self.flattened_gradient = self.orthogonal_component(self.flattened_gradient, self.flattened_memory)
             torch.cuda.empty_cache()
 
@@ -306,7 +306,7 @@ class GRU(UnlearnTrainer):
                 with amp.scale_loss(loss, self.optimizer) as scaled_loss:
                     scaled_loss.backward()
             else:
-                # GRU overwrite
+                # Overwriting with GRU
                 #self.accelerator.backward(loss, **kwargs)
 
                 torch.cuda.empty_cache()
@@ -332,7 +332,6 @@ class GRU(UnlearnTrainer):
    
     def compute_loss(self, model, inputs, return_outputs=False):
 
-        
         forget_inputs = inputs["forget"]
         forget_inputs = {
             "input_ids": forget_inputs["input_ids"],
@@ -363,6 +362,6 @@ class GRU(UnlearnTrainer):
                 'retain_loss': retain_loss,
                 'forget_loss': forget_loss
             }
-        print_metrics(self.steps, metrics)
+        #print_metrics(self.steps, metrics)
 
         return (loss, forget_outputs) if return_outputs else loss
