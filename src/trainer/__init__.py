@@ -13,6 +13,10 @@ from trainer.unlearn.rmu import RMU
 from trainer.unlearn.gru import GRU
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 TRAINER_REGISTRY: Dict[str, Any] = {}
 
 
@@ -68,6 +72,9 @@ def load_trainer(
         evaluator=evaluator,
         template_args=template_args,
         **method_args,
+    )
+    logger.info(
+        f"{trainer_handler_name} Trainer loaded, output_dir: {trainer_args.output_dir}"
     )
     return trainer, trainer_args
 
